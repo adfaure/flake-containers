@@ -71,7 +71,7 @@ in {
     '';
   };
   config = mkIf cfg.enable {
-    perSystem = perSystemScope@{ config, lib, pkgs, system, ... }:
+    perSystem = perSystemScope@{ config, self', lib, pkgs, system, ... }:
       let
         containerConfig = {
           # system.stateVersion = lib.mkDefault lib.trivial.release;
@@ -84,20 +84,39 @@ in {
               systemd.services.nix-daemon.enable = lib.mkDefault false;
             })
             # user defined module
-            cfg.container
+            cfg.container.configuration
           ];
         };
+        container-name = cfg.container.name;
         builtContainer = pkgs.nixos containerConfig;
         rootPath = "${builtContainer.toplevel}";
       in {
-        packages.container-up = (import ./src/wrapper.nix) {
-          inherit pkgs lib;
-          rootpath = rootPath;
-          flake-root = perSystemScope.config.flake-root.package;
-          name = "container-test";
+        packages = {
+          container-up = (import ./src/container-up.nix) {
+            inherit pkgs lib;
+            rootpath = rootPath;
+            flake-root = perSystemScope.config.flake-root.package;
+            name = container-name;
+          };
+          container-down = pkgs.writeShellApplication {
+            name = "${container-name}-down";
+            text = ''
+              machinectl stop ${container-name}
+            '';
+          };
+          container-shell = pkgs.writeShellApplication {
+            name = "${container-name}-shell";
+            text = ''
+              machinectl shell ${container-name}
+            '';
+          };
         };
+
         # Empty for the example
-        devShells.flake-containers = pkgs.mkShell { nativeBuildInputs = [ ]; };
+        devShells.flake-containers = pkgs.mkShell {
+          nativeBuildInputs =
+            [ self'.packages.container-up self'.packages.container-down self'.packages.container-shell ];
+        };
       };
   };
 }
