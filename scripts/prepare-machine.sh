@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
+# Name of the container
+machine=$1
+# Top level 
+toplevel=$2
+
 base_dir="/tmp/nc-tests"
-machine="nc-test"
-toplevel="/nix/store/ach3867rm8y3156ck238qrsrgyy6ck88-nixos-system-nixos-23.11pre-git"
 
 if [[ -z "$machine" ]]; then
     echo "machine name required"

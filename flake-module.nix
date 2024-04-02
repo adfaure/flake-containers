@@ -70,9 +70,8 @@ in {
       The config for flake-containers.
     '';
   };
-
   config = mkIf cfg.enable {
-    perSystem = { pkgs, system, ... }:
+    perSystem = perSystemScope@{ config, lib, pkgs, system, ... }:
       let
         containerConfig = {
           # system.stateVersion = lib.mkDefault lib.trivial.release;
@@ -84,23 +83,21 @@ in {
               systemd.sockets.nix-daemon.enable = lib.mkDefault false;
               systemd.services.nix-daemon.enable = lib.mkDefault false;
             })
-
             # user defined module
-            cfg.container 
+            cfg.container
           ];
         };
         builtContainer = pkgs.nixos containerConfig;
-        toplevel = "${builtContainer}";
+        rootPath = "${builtContainer.toplevel}";
       in {
-        packages.container = pkgs.writeTextFile {
-          name = "test";
-          text = ''
-            echo "container toplevel = ${toplevel}"
-          '';
+        packages.container-up = (import ./src/wrapper.nix) {
+          inherit pkgs lib;
+          rootpath = rootPath;
+          flake-root = perSystemScope.config.flake-root.package;
+          name = "container-test";
         };
         # Empty for the example
-        devShells.flake-containers =
-          pkgs.mkShell { nativeBuildInputs = []; };
+        devShells.flake-containers = pkgs.mkShell { nativeBuildInputs = [ ]; };
       };
   };
 }
