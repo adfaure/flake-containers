@@ -58,7 +58,7 @@ let
           Config about the nixpkgs used by flake containers.
         '';
       };
-      container = mkOption { };
+      containers = mkOption { };
     };
   };
 
@@ -73,50 +73,77 @@ in {
   config = mkIf cfg.enable {
     perSystem = perSystemScope@{ config, self', lib, pkgs, system, ... }:
       let
-        containerConfig = {
-          # system.stateVersion = lib.mkDefault lib.trivial.release;
-          imports = [
-            # Minimal module that declares a container
-            ({ pkgs, lib, modulesPath, ... }: {
-              boot.isContainer = true;
-              imports = [ "${modulesPath}/profiles/minimal.nix" ];
-              systemd.sockets.nix-daemon.enable = lib.mkDefault false;
-              systemd.services.nix-daemon.enable = lib.mkDefault false;
-            })
-            # user defined module
-            cfg.container.configuration
-          ];
-        };
-        container-name = cfg.container.name;
-        builtContainer = pkgs.nixos containerConfig;
-        rootPath = "${builtContainer.toplevel}";
-      in {
-        packages = {
-          container-up = (import ./src/container-up.nix) {
-            inherit pkgs lib;
-            rootpath = rootPath;
-            flake-root = perSystemScope.config.flake-root.package;
-            name = container-name;
+        mergeIntoSet = lib.foldr (a: b: a // b) { };
+        # Fot the moment, map containers to private adresses
+        allocatedAdresses = mergeIntoSet (lib.imap1 (i: name: {
+          "${name}" = let ipPrefix = "10.233.${builtins.toString i}";
+          in {
+            hostAddress = "${ipPrefix}.1";
+            localAddress = "${ipPrefix}.2";
           };
-          container-down = pkgs.writeShellApplication {
-            name = "${container-name}-down";
-            text = ''
-              machinectl stop ${container-name}
-            '';
-          };
-          container-shell = pkgs.writeShellApplication {
-            name = "${container-name}-shell";
-            text = ''
-              machinectl shell ${container-name}
-            '';
-          };
-        };
+        }) ((lib.mapAttrsToList (name: config: name)) cfg.containers));
 
+        # Create a the commands that manage the containers
+        mkContainer = name: container: localAddress: hostAddress:
+          let
+            containerConfig = {
+              # system.stateVersion = lib.mkDefault lib.trivial.release;
+              imports = [
+                # Minimal module that declares a container
+                ({ pkgs, lib, modulesPath, ... }: {
+                  boot.isContainer = true;
+                  # imports = [ "${modulesPath}/profiles/minimal.nix" ];
+                  systemd.sockets.nix-daemon.enable = lib.mkDefault false;
+                  systemd.services.nix-daemon.enable = lib.mkDefault false;
+                })
+                # user defined module
+                container.configuration
+              ];
+            };
+            container-name = name;
+            builtContainer = pkgs.nixos containerConfig;
+            rootPath = "${builtContainer.toplevel}";
+          in {
+            inherit container-name builtContainer rootPath;
+            commands = {
+              # Maybe not the best way to import it
+              # TODO: make it a function instead ?
+              container-up = (import ./src/container-up.nix) {
+                inherit pkgs lib localAddress hostAddress;
+                rootpath = rootPath;
+                flake-root = perSystemScope.config.flake-root.package;
+                name = container-name;
+              };
+              container-down = pkgs.writeShellApplication {
+                name = "${container-name}-down";
+                text = ''
+                  machinectl stop ${container-name}
+                '';
+              };
+              container-shell = pkgs.writeShellApplication {
+                name = "${container-name}-shell";
+                text = ''
+                  machinectl shell ${container-name}
+                '';
+              };
+            };
+          };
+
+        # Create all containers
+        containers = lib.mapAttrsToList (name: container:
+          mkContainer name container allocatedAdresses."${name}".localAddress
+          allocatedAdresses."${name}".hostAddress) cfg.containers;
+
+        # Create a list to be add to the buildInputs
+        to-list = lib.concatMap
+          # Create a list from the set
+          (lib.mapAttrsToList (name: command: command))
+          # Get the commands attribute for each container
+          (lib.forEach containers (container: container.commands));
+      in {
         # Empty for the example
-        devShells.flake-containers = pkgs.mkShell {
-          nativeBuildInputs =
-            [ self'.packages.container-up self'.packages.container-down self'.packages.container-shell ];
-        };
+        devShells.flake-containers =
+          pkgs.mkShell { nativeBuildInputs = lib.flatten [ to-list ]; };
       };
   };
 }
