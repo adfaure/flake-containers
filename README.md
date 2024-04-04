@@ -15,6 +15,8 @@ As stated, this is a proof of concept. I created it for experimenting with syste
 
 That being said, in my development workflow, I almost always define my development dependencies into a flake for Rust, Python, Go, etc. When I need to use different services, such as a database, I would typically rely on Docker. However, with flake-containers, I can directly benefit from NixOS services and enable and configure the services that I need, in a reproducible and shareable way.
 
+It's worth mentioning that while there already exists a way to manage NixOS containers using `nixos-container`, it integrates within a NixOS configuration. This project has been largely inspired by `nixos-containers` (in fact, most of the code comes from there). However, flake-containers enables the definition and management of NixOS containers without the need to update your system configuration. Furthermore, it should work on any Linux distribution with Nix installed.
+
 ## Limitations
 - It requires root privileges to start the containers.
 - There is a dependency on flake-roots to retrieve the path for the project, where I store the states for the containers.
@@ -27,6 +29,9 @@ That being said, in my development workflow, I almost always define my developme
 - Compatibility with other distributions is untested; it has only been tested on NixOS.
 - The project lacks testing. It appears to work on my computer; that's the only guarantee I can offer at the moment.
 - There is an ugly sleep at the start time. I need a better way to detect when a container is alive to start the network configuration.
+- Add a way to configure the nixpkgs (so we can add extra config options such overlays, or unfreePackages etc)
+- Better nix code (add comments and types)
+- Create a script to clean container states directory: https://github.com/NixOS/nixpkgs/issues/63028#issuecomment-507517718
 
 ## Usage
 
@@ -102,7 +107,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 - https://gitlab.inria.fr/nixos-compose/nixos-compose
 - https://www.tweag.io/blog/2020-07-31-nixos-flakes/
-- https://github.com/tfc/nspawn-nixos/blob/main/nspawn-tarball.nix
+- https://github.com/tfc/nspawn-nixos
 - https://blog.beardhatcode.be/2020/12/Declarative-Nixos-Containers.html
 - https://nixos.org/manual/nixos/stable/#sec-imperative-containers
 - https://github.com/NixOS/nixpkgs/blob/2456e8475ffd7363fe194505ef0488dfc89a8eb1/nixos/modules/virtualisation/containers.nix#L212

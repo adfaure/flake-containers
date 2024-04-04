@@ -1,4 +1,7 @@
 { pkgs, lib, rootpath, name, flake-root, localAddress, hostAddress, ... }:
+# Files that contains the code to start a container.
+# The original works come from nixos-containers services (https://github.com/NixOS/nixpkgs/blob/8b152a2242d4f29de1c072f833ab941dd141c510/nixos/modules/virtualisation/nixos-containers.nix#L43)
+# That is used to define and manage systemd-containers within a nixos configuration.
 let
   inherit (lib) getExe optionalString mapAttrsToList concatStringsSep;
 
@@ -10,7 +13,7 @@ let
   # Contains container configuration to configure its launching parameters (volumes, network etc)
   containerConfigDir = "${flakeContainersBaseDir}/${name}/volume";
 
-  # Code from https://github.com/NixOS/nixpkgs/blob/8b152a2242d4f29de1c072f833ab941dd141c510/nixos/modules/virtualisation/nixos-containers.nix#L43
+  # Code from 
   containerInit = pkgs.writeScript "container-init" ''
     #! ${pkgs.runtimeShell} -e
 

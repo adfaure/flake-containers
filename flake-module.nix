@@ -82,7 +82,6 @@ in {
             localAddress = "${ipPrefix}.2";
           };
         }) ((lib.mapAttrsToList (name: config: name)) cfg.containers));
-
         # Create a the commands that manage the containers
         mkContainer = name: container: localAddress: hostAddress:
           let
@@ -146,6 +145,14 @@ in {
           (lib.forEach containers (container: container.commands));
 
       in {
+        # flake-part way to specify nixpkgs
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          overlays = [];
+          config.permittedInsecurePackages = [
+                "zookeeper-3.7.2"
+            ];
+        };
         packages = to-attribute-set;
         # Empty for the example
         devShells.flake-containers =

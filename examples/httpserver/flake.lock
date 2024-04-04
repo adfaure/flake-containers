@@ -2,16 +2,14 @@
   "nodes": {
     "flake-containers": {
       "locked": {
-        "dirtyRev": "cd479ca3b96a1e7d1d6c028f56b7d1755e403ea4-dirty",
-        "dirtyShortRev": "cd479ca-dirty",
-        "lastModified": 1712182905,
-        "narHash": "sha256-I/vrxuPsda9EAs8RbeLOSanJ5C42VK8a3KelOQkt5WY=",
-        "type": "git",
-        "url": "file:///home/adfaure/code/flake-containers"
+        "lastModified": 0,
+        "narHash": "sha256-liyHynvL0urfGi7a+VvB9t2k+WSL57UE5HG5bWfzJhU=",
+        "path": "/nix/store/8spisabjg0l2880gbpmmwq9lr9j3lkci-source",
+        "type": "path"
       },
       "original": {
-        "type": "git",
-        "url": "file:///home/adfaure/code/flake-containers"
+        "path": "/nix/store/8spisabjg0l2880gbpmmwq9lr9j3lkci-source",
+        "type": "path"
       }
     },
     "flake-parts": {
