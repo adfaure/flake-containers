@@ -108,19 +108,19 @@ in {
             commands = {
               # Maybe not the best way to import it
               # TODO: make it a function instead ?
-              container-up = (import ./src/container-up.nix) {
+              "${container-name}-up" = (import ./src/container-up.nix) {
                 inherit pkgs lib localAddress hostAddress;
                 rootpath = rootPath;
                 flake-root = perSystemScope.config.flake-root.package;
                 name = container-name;
               };
-              container-down = pkgs.writeShellApplication {
+              "${container-name}-down" = pkgs.writeShellApplication {
                 name = "${container-name}-down";
                 text = ''
                   machinectl stop ${container-name}
                 '';
               };
-              container-shell = pkgs.writeShellApplication {
+              "${container-name}-shell" = pkgs.writeShellApplication {
                 name = "${container-name}-shell";
                 text = ''
                   machinectl shell ${container-name}
@@ -140,10 +140,16 @@ in {
           (lib.mapAttrsToList (name: command: command))
           # Get the commands attribute for each container
           (lib.forEach containers (container: container.commands));
+
+        to-attribute-set = mergeIntoSet
+          # Get the commands attribute for each container
+          (lib.forEach containers (container: container.commands));
+
       in {
+        packages = to-attribute-set;
         # Empty for the example
         devShells.flake-containers =
-          pkgs.mkShell { nativeBuildInputs = lib.flatten [ to-list ]; };
+          pkgs.mkShell { nativeBuildInputs = lib.flatten to-list; };
       };
   };
 }
