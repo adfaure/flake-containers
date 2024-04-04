@@ -7,7 +7,7 @@
     # repositorty to create the states for the containers
     flake-root.url = "github:srid/flake-root";
     # Import flake-containers
-    flake-containers.url = "/home/adfaure/code/flake-containers";
+    flake-containers.url = "github:adfaure/flake-containers";
   };
   outputs =
     inputs@{ self, nixpkgs, flake-parts, flake-containers, flake-root, ... }:
