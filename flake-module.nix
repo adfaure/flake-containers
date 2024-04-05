@@ -74,6 +74,7 @@ in {
     perSystem = perSystemScope@{ config, self', lib, pkgs, system, ... }:
       let
         mergeIntoSet = lib.foldr (a: b: a // b) { };
+
         # Fot the moment, map containers to private adresses
         allocatedAdresses = mergeIntoSet (lib.imap1 (i: name: {
           "${name}" = let ipPrefix = "10.233.${builtins.toString i}";
@@ -82,9 +83,10 @@ in {
             localAddress = "${ipPrefix}.2";
           };
         }) ((lib.mapAttrsToList (name: config: name)) cfg.containers));
-        
+
         # Create a the commands that manage the containers
-        mkContainer = import ./src/mkContainer.nix { inherit lib pkgs perSystemScope; };
+        mkContainer =
+          import ./src/mkContainer.nix { inherit lib pkgs perSystemScope; };
 
         # Create all containers
         containers = lib.mapAttrsToList (name: container:
@@ -107,14 +109,30 @@ in {
           overlays = cfg.nixpkgs.overlays;
           config = cfg.nixpkgs.config;
         };
+
+        shellHookHelpStr = let
+          commands-list = lib.foldr (a: b: a + "\n" + b) " " (lib.flatten
+            (lib.forEach containers
+              (container: builtins.attrNames container.commands)));
+        in ''
+          flake-containers Shell Hook!
+
+          The following commands are available (sudo is required for the up commands):
+          ${commands-list}
+        '';
+
       in {
         # flake-part way to specify nixpkgs
         _module.args.pkgs = selectedPkgs;
 
+        # Create packages so they can be used directly from nix run
         packages = to-attribute-set;
+
         # Empty for the example
-        devShells.flake-containers =
-          pkgs.mkShell { nativeBuildInputs = lib.flatten to-list; };
+        devShells.flake-containers = pkgs.mkShell {
+          shellHook = ''echo "${shellHookHelpStr}"'';
+          nativeBuildInputs = lib.flatten to-list;
+        };
       };
   };
 }

@@ -3,12 +3,12 @@
     "flake-containers": {
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-XnUY22DzXSSe0pyCDx3eqp+npMCeC4lMZdIzaujro0M=",
-        "path": "/nix/store/5gw2ckj4kl67w9dkqm42bmpjyc1n87qc-source",
+        "narHash": "sha256-RsjLVaJRawLGVXzn8tsZxq4QArrDNn+K2R2ByRFVQvw=",
+        "path": "/nix/store/yd2lyk8bclpsz3i4ixhjvz5gb2bqwwc3-source",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/5gw2ckj4kl67w9dkqm42bmpjyc1n87qc-source",
+        "path": "/nix/store/yd2lyk8bclpsz3i4ixhjvz5gb2bqwwc3-source",
         "type": "path"
       }
     },
