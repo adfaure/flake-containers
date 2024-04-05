@@ -82,51 +82,9 @@ in {
             localAddress = "${ipPrefix}.2";
           };
         }) ((lib.mapAttrsToList (name: config: name)) cfg.containers));
+        
         # Create a the commands that manage the containers
-        mkContainer = name: container: localAddress: hostAddress:
-          let
-            containerConfig = {
-              # system.stateVersion = lib.mkDefault lib.trivial.release;
-              imports = [
-                # Minimal module that declares a container
-                ({ pkgs, lib, modulesPath, ... }: {
-                  boot.isContainer = true;
-                  # imports = [ "${modulesPath}/profiles/minimal.nix" ];
-                  systemd.sockets.nix-daemon.enable = lib.mkDefault false;
-                  systemd.services.nix-daemon.enable = lib.mkDefault false;
-                })
-                # user defined module
-                container.configuration
-              ];
-            };
-            container-name = name;
-            builtContainer = pkgs.nixos containerConfig;
-            rootPath = "${builtContainer.toplevel}";
-          in {
-            inherit container-name builtContainer rootPath;
-            commands = {
-              # Maybe not the best way to import it
-              # TODO: make it a function instead ?
-              "${container-name}-up" = (import ./src/container-up.nix) {
-                inherit pkgs lib localAddress hostAddress;
-                rootpath = rootPath;
-                flake-root = perSystemScope.config.flake-root.package;
-                name = container-name;
-              };
-              "${container-name}-down" = pkgs.writeShellApplication {
-                name = "${container-name}-down";
-                text = ''
-                  machinectl stop ${container-name}
-                '';
-              };
-              "${container-name}-shell" = pkgs.writeShellApplication {
-                name = "${container-name}-shell";
-                text = ''
-                  machinectl shell ${container-name}
-                '';
-              };
-            };
-          };
+        mkContainer = import ./src/mkContainer.nix { inherit lib pkgs perSystemScope; };
 
         # Create all containers
         containers = lib.mapAttrsToList (name: container:
@@ -144,15 +102,15 @@ in {
           # Get the commands attribute for each container
           (lib.forEach containers (container: container.commands));
 
+        selectedPkgs = import cfg.nixpkgs.nixpkgs {
+          inherit system;
+          overlays = cfg.nixpkgs.overlays;
+          config = cfg.nixpkgs.config;
+        };
       in {
         # flake-part way to specify nixpkgs
-        _module.args.pkgs = import inputs.nixpkgs {
-          inherit system;
-          overlays = [];
-          config.permittedInsecurePackages = [
-                "zookeeper-3.7.2"
-            ];
-        };
+        _module.args.pkgs = selectedPkgs;
+
         packages = to-attribute-set;
         # Empty for the example
         devShells.flake-containers =

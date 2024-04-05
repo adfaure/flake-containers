@@ -20,6 +20,14 @@
       flake-containers = {
         # Enable the containers
         enable = true;
+
+        # Define and configure nixpgs
+        nixpkgs = {
+          config.permittedInsecurePackages = [
+                "zookeeper-3.7.2"
+          ];
+        };
+
         # Define the containers as nixos modules
         containers = {
           # One container named httpsserver
