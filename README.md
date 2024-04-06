@@ -36,6 +36,7 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
 - Add an ephemeral mode
     - see --ephemeral on systemd-npsawn ?
     - manually setting up tmpfs ?
+- Add comparison with devenv, nix2containers, nixos-compose
 
 ## Usage
 
