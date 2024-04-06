@@ -10,6 +10,18 @@ let
   overlayType = types.uniq
     (types.functionTo (types.functionTo (types.lazyAttrsOf types.unspecified)));
 
+  containerOptionType = types.submodule {
+    options = {
+      configuration = mkOption {};
+      volumes-ro = mkOption {
+        default = [];
+      };
+      volumes = mkOption {
+        default = [];
+      };
+    };
+  };
+
   nixpkgsOptionType = types.submodule {
     options = {
       nixpkgs = mkOption {
@@ -58,7 +70,13 @@ let
           Config about the nixpkgs used by flake containers.
         '';
       };
-      containers = mkOption { };
+      containers = mkOption { 
+        type = types.attrsOf containerOptionType;
+        default = { };
+        description = ''
+          Container configuration. Defines the system modules, volumes etc
+        '';
+      };
     };
   };
 

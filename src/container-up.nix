@@ -1,4 +1,4 @@
-{ pkgs, lib, rootpath, name, flake-root, localAddress, hostAddress, ... }:
+{ pkgs, lib, rootpath, name, flake-root, localAddress, hostAddress, volumes, volumes-ro, ... }:
 # Files that contains the code to start a container.
 # The original works come from nixos-containers services (https://github.com/NixOS/nixpkgs/blob/8b152a2242d4f29de1c072f833ab941dd141c510/nixos/modules/virtualisation/nixos-containers.nix#L43)
 # That is used to define and manage systemd-containers within a nixos configuration.
@@ -12,6 +12,14 @@ let
 
   # Contains container configuration to configure its launching parameters (volumes, network etc)
   containerConfigDir = "${flakeContainersBaseDir}/${name}/volume";
+
+  extraVolumes = (builtins.concatStringsSep " " (lib.forEach volumes (volume: 
+      ''--bind="${volume}"''
+  )));
+
+  extraRoVolumes = (builtins.concatStringsSep " " (lib.forEach volumes-ro (volume: 
+      ''--bind-ro="${volume}"''
+  )));
 
   # Code from 
   containerInit = pkgs.writeScript "container-init" ''
@@ -58,6 +66,8 @@ let
         # exit 1
       fi
 
+      command_dir=$PWD
+
       mkdir -p "$machine_dir"
       cd "$machine_dir"
 
@@ -70,6 +80,9 @@ let
       # Clean previous interfaces
       ip link del dev "ve-${name}" 2> /dev/null || true
       ip link del dev "vb-${name}" 2> /dev/null || true
+
+      # Get back to where the command was launched
+      cd "$command_dir"
 
       # start container in subprocess
       systemd-nspawn \
@@ -84,6 +97,8 @@ let
         --bind="${rootpath}:/nix/var/nix/profiles" \
         --bind="${rootpath}:/nix/var/nix/gcroots" \
         --link-journal=try-guest \
+        ${extraVolumes} \
+        ${extraRoVolumes} \
         --capability="CAP_NET_ADMIN" \
         ${containerInit} "${rootpath}/init" &
 

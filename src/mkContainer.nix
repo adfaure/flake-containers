@@ -26,6 +26,8 @@ in {
     # TODO: make it a function instead ?
     "${container-name}-up" = (import ./container-up.nix) {
       inherit pkgs lib localAddress hostAddress;
+      volumes = container.volumes;
+      volumes-ro = container.volumes-ro;
       rootpath = rootPath;
       flake-root = perSystemScope.config.flake-root.package;
       name = container-name;

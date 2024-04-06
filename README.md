@@ -19,17 +19,18 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
 
 ## Limitations
 - It requires root privileges to start the containers.
+- nixpkgs can be configured with a config and overlays, even changing the nixpkgs source. However, it cannot be set on a per container basis, and it is effective for each containers.
 - There is a dependency on flake-roots to retrieve the path for the project, where I store the states for the containers.
+- I dont think that the container can be updated while alive (with with nixos-rebuild switch for instance).
 
 ## Future Works
 - It is not a compose-style project (at least for now); there is one command per container. No "flake-containers up" command.
 - No support for volumes (temporary or permanent).
+    - Volumes can be configured now in nix
 - The network configuration is currently simple and not configurable.
-- No handling of hostnames.
 - Compatibility with other distributions is untested; it has only been tested on NixOS.
 - The project lacks testing. It appears to work on my computer; that's the only guarantee I can offer at the moment.
 - There is an ugly sleep at the start time. I need a better way to detect when a container is alive to start the network configuration.
-- Add a way to configure the nixpkgs (so we can add extra config options such overlays, or unfreePackages etc)
 - Better nix code (add comments and types)
 - Create a script to clean container states directory: https://github.com/NixOS/nixpkgs/issues/63028#issuecomment-507517718
 
@@ -38,45 +39,50 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
 1. Start by creating a flake with the following content:
     ```nix
     {
-    inputs = {
-        nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
-        # This project is based on flake-parts, so you need to import it
-        flake-parts.url = "github:hercules-ci/flake-parts";
-        # flake-root is a dependency that enable to find the root project for the flake
-        # repositorty to create the states for the containers
-        flake-root.url = "github:srid/flake-root";
-        # Import flake-containers
-        flake-containers.url = "github:adfaure/flake-containers";
-    };
-    outputs =
-        inputs@{ self, nixpkgs, flake-parts, flake-containers, flake-root, ... }:
-        flake-parts.lib.mkFlake { inherit inputs; } {
-        imports =
-            [ inputs.flake-containers.flakeModule inputs.flake-root.flakeModule ];
+        inputs = {
+            nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+            # This project is based on flake-parts, so you need to import it
+            flake-parts.url = "github:hercules-ci/flake-parts";
+            # flake-root is a dependency that enable to find the root project for the flake
+            # repositorty to create the states for the containers
+            flake-root.url = "github:srid/flake-root";
+            # Import flake-containers
+            flake-containers.url = "github:adfaure/flake-containers";
+        };
+        outputs =
+            inputs@{ self, nixpkgs, flake-parts, flake-containers, flake-root, ... }:
+            flake-parts.lib.mkFlake { inherit inputs; } {
+            imports =
+                [ inputs.flake-containers.flakeModule inputs.flake-root.flakeModule ];
 
-        systems = [ "x86_64-linux" ];
+            systems = [ "x86_64-linux" ];
 
-        flake-containers = {
-            # Enable the containers
-            enable = true;
-            # Define the containers as nixos modules
-            containers = {
-                # One container named httpsserver
-                httpserver = {
-                    configuration = { pkgs, lib, ... }: {
-                    # Network configuration.
-                    networking.useDHCP = false;
-                    networking.firewall.allowedTCPPorts = [ 80 ];
+            flake-containers = {
+                # Enable the containers
+                enable = true;
+                # Define the containers as nixos modules
+                containers = {
+                    # One container named httpsserver
+                    httpserver = {
+                        # Define volumes to be bind inside the conaiter
+                        volumes = [ "/tmp" "src:/tmp/src" ];
+                        volumes-ro = [ "/data" ];
+                        
+                        # The configuration is a regular nixos module
+                        configuration = { pkgs, lib, ... }: {
+                            # Network configuration.
+                            networking.useDHCP = false;
+                            networking.firewall.allowedTCPPorts = [ 80 ];
 
-                    # Enable a web server.
-                    services.httpd = {
-                        enable = true;
-                        adminAddr = "morty@example.org";
-                    };
+                            # Enable a web server.
+                            services.httpd = {
+                                enable = true;
+                                adminAddr = "morty@example.org";
+                            };
+                        };
                     };
                 };
             };
-        };
         };
     }
     ```
