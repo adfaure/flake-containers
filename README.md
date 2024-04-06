@@ -26,13 +26,16 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
 ## Future Works
 - It is not a compose-style project (at least for now); there is one command per container. No "flake-containers up" command.
 - No support for volumes (temporary or permanent).
-    - Volumes can be configured now in nix
-- The network configuration is currently simple and not configurable.
+    - Volumes can be configured now in nix, but why not adding the possibility to specify volumes in the command line ?
+- The network configuration is currently simple and not configurable (no support for bridges for instance).
 - Compatibility with other distributions is untested; it has only been tested on NixOS.
 - The project lacks testing. It appears to work on my computer; that's the only guarantee I can offer at the moment.
 - There is an ugly sleep at the start time. I need a better way to detect when a container is alive to start the network configuration.
 - Better nix code (add comments and types)
 - Create a script to clean container states directory: https://github.com/NixOS/nixpkgs/issues/63028#issuecomment-507517718
+- Add an ephemeral mode
+    - see --ephemeral on systemd-npsawn ?
+    - manually setting up tmpfs ?
 
 ## Usage
 
