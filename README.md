@@ -38,6 +38,7 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
     - manually setting up tmpfs ?
 - Add comparison with devenv, nix2containers, nixos-compose
 
+
 ## Usage
 
 1. Start by creating a flake with the following content:
@@ -106,6 +107,19 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
 2. Use `nix develop .#flake-containers` to dive into a shell containing commands to manage your containers.
 3. Start the container with `sudo httpserver-up` to start the container.
 4. The container should appear with the `machinectl list` command.
+
+## Similar Projects
+
+| Similar (or related) projects | Description |
+|-------------------------------|-------------|
+| [nixos-containers](https://nixos.wiki/wiki/NixOS_Containers) | Declare and manage NixOs systemd containers. |
+| [extra-container](https://github.com/erikarvstedt/extra-container) | Generates systemd service files for starting containers directly from systemctl. Maintains compatibility with nixos-container. |
+| [nixos-compose](https://gitlab.inria.fr/nixos-compose/nixos-compose) | The goal of NixOS-Compose is to reduce the burden of setting up ephemeral distributed systems thanks to Nix functional package manager and Nixos |
+| [devenv](https://devenv.sh/) | Use a simple unified configuration to configure packages, processes, services, scripts, git hooks, integrations. Devenv has its own way to create containers.
+| [nix2Container](https://github.com/nlewo/nix2container) | An archive-less dockerTools.buildImage implementation  |
+| [Arion](https://github.com/hercules-ci/arion) |Run docker-compose with help from Nix/NixOS. |
+
+
 
 ## Contributing
 Contributions are welcome! Feel free to open issues for bugs or feature requests, and submit pull requests with improvements.
