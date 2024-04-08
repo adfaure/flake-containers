@@ -1,4 +1,4 @@
-{ pkgs, lib, rootpath, name, flake-root, localAddress, hostAddress, volumes, volumes-ro, ... }:
+{ pkgs, lib, rootpath, name, flake-root, localAddress, hostAddress, volumes, volumes-ro, containerConfig, ... }:
 # Files that contains the code to start a container.
 # The original works come from nixos-containers services (https://github.com/NixOS/nixpkgs/blob/8b152a2242d4f29de1c072f833ab941dd141c510/nixos/modules/virtualisation/nixos-containers.nix#L43)
 # That is used to define and manage systemd-containers within a nixos configuration.
@@ -21,7 +21,15 @@ let
       ''--bind-ro="${volume}"''
   )));
 
-  # Code from 
+  initCommand = if containerConfig.runCommand != null then
+  let 
+    wrappedCommand =  pkgs.writeScript "container-init" ''
+      ${containerConfig.runCommand pkgs}
+    '';
+    in "${wrappedCommand}"
+  else
+    "${rootpath}/init";
+
   containerInit = pkgs.writeScript "container-init" ''
     #! ${pkgs.runtimeShell} -e
 
@@ -51,6 +59,9 @@ let
   containerUpScript = pkgs.writeShellApplication {
     name = "${name}-up";
     text = ''
+      # TODO: ensure execution
+      trap 'chattr -i ''${machine_dir}/var/empty' EXIT SIGINT SIGTERM
+      
       # TODO: see how they get rootpath
       # https://github.com/Platonic-Systems/mission-control/blob/master/nix/flake-module.nix#L76C32-L76C67
 
@@ -100,7 +111,7 @@ let
         ${extraVolumes} \
         ${extraRoVolumes} \
         --capability="CAP_NET_ADMIN" \
-        ${containerInit} "${rootpath}/init" &
+        ${containerInit} "${initCommand}" &
 
       # FIXME: Aouch
       sleep 5s
@@ -111,8 +122,9 @@ let
       ${pkgs.iproute2}/bin/ip addr add ${hostAddress} dev ve-${name}
       ${pkgs.iproute2}/bin/ip route add ${localAddress} dev ve-${name}
 
-      # wait end of conainter
+      # wait end of containter
       wait
+
     '';
   };
 in containerUpScript

@@ -3,12 +3,12 @@
     "flake-containers": {
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-TiB3EjSCqS/MjmQ7qf2PGWxvi0Hvi5yqSElFI6D9mgg=",
-        "path": "/nix/store/gdgi32nr6rb1xx3f8mflwsv9j5rn1330-source",
+        "narHash": "sha256-YVJCqRyNTrK1IjZdbG+a7SL+S3P8RAMJ/B7iKpwPN68=",
+        "path": "/nix/store/b0vyal5vga3ldi360s5ww6bjk9zysmzz-source",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/gdgi32nr6rb1xx3f8mflwsv9j5rn1330-source",
+        "path": "/nix/store/b0vyal5vga3ldi360s5ww6bjk9zysmzz-source",
         "type": "path"
       }
     },
@@ -47,11 +47,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1711668574,
-        "narHash": "sha256-u1dfs0ASQIEr1icTVrsKwg2xToIpn7ZXxW3RHfHxshg=",
+        "lastModified": 1712437997,
+        "narHash": "sha256-g0whLLwRvgO2FsyhY8fNk+TWenS3jg5UdlWL4uqgFeo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "219951b495fc2eac67b1456824cc1ec1fd2ee659",
+        "rev": "e38d7cb66ea4f7a0eb6681920615dfcc30fc2920",
         "type": "github"
       },
       "original": {

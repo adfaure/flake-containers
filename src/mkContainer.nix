@@ -29,6 +29,7 @@ in {
       volumes = container.volumes;
       volumes-ro = container.volumes-ro;
       rootpath = rootPath;
+      containerConfig = container;
       flake-root = perSystemScope.config.flake-root.package;
       name = container-name;
     };

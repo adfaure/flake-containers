@@ -19,6 +19,9 @@ let
       volumes = mkOption {
         default = [];
       };
+      runCommand = mkOption {
+        default = null;
+      };
     };
   };
 

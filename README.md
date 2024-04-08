@@ -37,6 +37,9 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
     - see --ephemeral on systemd-npsawn ?
     - manually setting up tmpfs ?
 - Add comparison with devenv, nix2containers, nixos-compose
+- Create a better way to specify run commands
+- Create a way to easily define testscripts (same as in nixos)
+- Find a way to transfer ownership inside the container (so for instance, when running commands from inside the container, we don't end up with a lot of root files in the host system)
 
 
 ## Usage
@@ -118,7 +121,6 @@ It's worth mentioning that while there already exists a way to manage NixOS cont
 | [devenv](https://devenv.sh/) | Use a simple unified configuration to configure packages, processes, services, scripts, git hooks, integrations. Devenv has its own way to create containers.
 | [nix2Container](https://github.com/nlewo/nix2container) | An archive-less dockerTools.buildImage implementation  |
 | [Arion](https://github.com/hercules-ci/arion) |Run docker-compose with help from Nix/NixOS. |
-
 
 
 ## Contributing
